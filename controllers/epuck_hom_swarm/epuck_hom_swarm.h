@@ -160,7 +160,7 @@ public:
         ExperimentToRun();
         void Init(TConfigurationNode& t_node);
 
-        inline unsigned SetNumEPuckRobotsInSwarm(unsigned num_epucks)
+        inline void SetNumEPuckRobotsInSwarm(unsigned num_epucks)
         {
             u_num_epucks = num_epucks;
         }
