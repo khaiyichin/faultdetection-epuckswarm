@@ -31,17 +31,7 @@ To compile the code, open up a shell, go to the directory where you unpacked the
 
 $ mkdir build
 $ cd build
-
-To produce debuggable code (slow), type:
-
-$ cmake -DCMAKE_BUILD_TYPE=Debug ..
-
-To produce fast but not debuggable code, type:
-
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-
-Finally, launch the compilation with the command:
-
+$ cmake ..
 $ make
 
 If you find no error, you're ready to go to the next phase.
