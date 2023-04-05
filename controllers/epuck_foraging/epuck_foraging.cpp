@@ -7,6 +7,7 @@
 /* Logging */
 #include <argos3/core/utility/logging/argos_log.h>
 
+
 /****************************************/
 /****************************************/
 
@@ -37,6 +38,7 @@ void CEPuckForaging::ExperimentToRun::Init(TConfigurationNode& t_node)
         GetNodeAttribute(t_node, "swarm_behavior", swarmbehav);
         GetNodeAttribute(t_node, "fault_behavior", errorbehav);
         GetNodeAttribute(t_node, "id_faulty_robot", id_FaultyRobotInSwarm);
+        GetNodeAttribute(t_node, "injection_step", injectionStep);
     }
     catch(CARGoSException& ex)
             THROW_ARGOSEXCEPTION_NESTED("Error initializing type of experiment to run, and fault to simulate.", ex);
@@ -174,6 +176,7 @@ CEPuckForaging::CEPuckForaging() :
     m_pcGround(NULL),
     m_pcRNG(CRandom::CreateRNG("argos")),
     m_pcRNG_FVs(CRandom::CreateRNG("argos")),
+    b_currently_damaged(false),
     b_damagedrobot(false),
     u_num_consequtivecollisions(0)
 {
@@ -253,8 +256,9 @@ void CEPuckForaging::Init(TConfigurationNode& t_node)
 
     CopyRobotDetails(m_sRobotDetails);
 
-    if(this->GetId().compare("ep"+m_sExpRun.id_FaultyRobotInSwarm) == 0)
+    if(this->GetId().compare("ep"+m_sExpRun.id_FaultyRobotInSwarm) == 0){
         b_damagedrobot = true;
+    }
 
     // robotid set to 0 for now
     crminAgent = new CRMinRobotAgentOptimised(RobotIdStrToInt(), CProprioceptiveFeatureVector::NUMBER_OF_FEATURES);
@@ -372,6 +376,12 @@ void CEPuckForaging::ControlStep()
     m_pcRABA->ClearData(); // clear the channel at the start of each control cycle
     m_uEPuckRABDataIndex = 0;
 
+    // Only set the damaged robot flag once we hit the set timestep
+    if (b_damagedrobot && m_fInternalRobotTimer >= m_sExpRun.injectionStep){
+        b_currently_damaged = true;
+        m_pcLEDs->SetAllColors(CColor::RED); // for now
+    }
+
     m_fInternalRobotTimer += 1.0f;
 
     if(m_fInternalRobotTimer == 10000.0f)
@@ -398,7 +408,7 @@ void CEPuckForaging::ControlStep()
     }
 
     bool b_RunningGeneralFaults(false);
-    if(b_damagedrobot && (m_sExpRun.FBehavior == ExperimentToRun::FAULT_STRAIGHTLINE ||
+    if(b_currently_damaged && (m_sExpRun.FBehavior == ExperimentToRun::FAULT_STRAIGHTLINE ||
                           m_sExpRun.FBehavior == ExperimentToRun::FAULT_RANDOMWALK ||
                           m_sExpRun.FBehavior == ExperimentToRun::FAULT_CIRCLE ||
                           m_sExpRun.FBehavior == ExperimentToRun::FAULT_STOP))
@@ -412,50 +422,50 @@ void CEPuckForaging::ControlStep()
         RunForagingExperiment();
 
 
-    if(!b_damagedrobot || b_RunningGeneralFaults || m_sExpRun.FBehavior == ExperimentToRun::FAULT_NONE)
-        CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(), GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+    if(!b_currently_damaged || b_RunningGeneralFaults || m_sExpRun.FBehavior == ExperimentToRun::FAULT_NONE)
+        CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(), GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
     else
     {
         //m_pcLEDs->SetAllColors(CColor::RED);
 
         if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_PROXIMITYSENSORS_SETMIN)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(), GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(), GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_PROXIMITYSENSORS_SETMAX)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_PROXIMITYSENSORS_SETRANDOM)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_PROXIMITYSENSORS_SETOFFSET)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
 
 
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_RABSENSOR_SETOFFSET)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_RABSENSOR_MISSINGRECEIVERS)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
 
 
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_LWHEEL_SETZERO)
         {
             // does not affect the sensors - they stay the same
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         }
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_RWHEEL_SETZERO)
         {
             // does not affect the sensors - they stay the same
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         }
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_BWHEELS_SETZERO)
         {
             // does not affect the sensors - they stay the same
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
         }
 
 
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_SOFTWARE)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
 
         else if(m_sExpRun.FBehavior == ExperimentToRun::FAULT_POWER_FAILURE)
-            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_damagedrobot, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior));
+            CBehavior::m_sSensoryData.SetSensoryData(m_pcRNG, m_fInternalRobotTimer, GetIRSensorReadings(b_currently_damaged, m_sExpRun.FBehavior), m_pcLight->GetReadings(), m_pcGround->GetReadings(),GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior));
     }
 
     Real leftSpeed = 0.0, rightSpeed = 0.0;
@@ -497,13 +507,13 @@ void CEPuckForaging::ControlStep()
         rightSpeed = rightSpeed/2.0f;
     }
 
-    if(b_damagedrobot && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_LWHEEL_SETZERO)
+    if(b_currently_damaged && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_LWHEEL_SETZERO)
         leftSpeed  = 0.0f;
 
-    if(b_damagedrobot && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_RWHEEL_SETZERO)
+    if(b_currently_damaged && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_RWHEEL_SETZERO)
         rightSpeed = 0.0f;
 
-    if(b_damagedrobot && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_BWHEELS_SETZERO)
+    if(b_currently_damaged && m_sExpRun.FBehavior == ExperimentToRun::FAULT_ACTUATOR_BWHEELS_SETZERO)
     {
         leftSpeed = 0.0f;
         rightSpeed = 0.0f;
@@ -513,7 +523,7 @@ void CEPuckForaging::ControlStep()
 
     //std::cout << "LS:  " << leftSpeed << " RS:  " << rightSpeed << std::endl;
 
-    CCI_RangeAndBearingSensor::TReadings rabsensor_readings = GetRABSensorReadings(b_damagedrobot, m_sExpRun.FBehavior);
+    CCI_RangeAndBearingSensor::TReadings rabsensor_readings = GetRABSensorReadings(b_currently_damaged, m_sExpRun.FBehavior);
 
     m_uRobotId = RobotIdStrToInt();
     SenseCommunicateDetect(RobotIdStrToInt(), m_pcRABA, m_uEPuckRABDataIndex, m_pcWheelsEncoder,

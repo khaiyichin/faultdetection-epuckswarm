@@ -155,6 +155,7 @@ public:
 
         std::string id_FaultyRobotInSwarm;
         std::string swarmbehav;
+        int injectionStep; // the ARGoS timestep to activate the fault
 
         unsigned u_num_epucks; // number of epucks in swarm
 
@@ -633,6 +634,7 @@ private:
 
     TBehaviorVector             m_vecBehaviors;
     bool                        b_damagedrobot;     // true if robot is damaged
+    bool                        b_currently_damaged; // true if the fault is active
 
     unsigned                    u_num_consequtivecollisions;
 
