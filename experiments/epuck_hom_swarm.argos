@@ -33,15 +33,15 @@
         <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
-        <proximity implementation="default" show_rays="true" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true" noise_std_dev="0.01" />
+        <proximity implementation="default" show_rays="false" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="false" noise_std_dev="0.01" />
         <differential_steering implementation="default" vel_noise_range="-0.1:0.1"  dist_noise_range="-1.0:1.0" />
       </sensors>
       <params>
-        <experiment_run swarm_behavior="SWARM_FLOCKING"
+        <experiment_run swarm_behavior="SWARM_AGGREGATION"
 			swarm_behavior_trans=""
 			time_between_robots_trans_behav="-1.0"
-			fault_behavior="FAULT_NONE" 
+			fault_behavior="FAULT_STOP" 
 	                id_faulty_robot="15" />
         <wheel_turning max_speed="5" />
       </params>
@@ -115,10 +115,9 @@
   <visualization>
        <qt-opengl>
       <camera>
-        <placement idx="0"
-                    position="0,0,2.0"
-                   look_at="0,0,0"
-                   lens_focal_length="15" />
+        <placements>
+          <placement index="0" position="1.99925,-0.0942354,11.1666" look_at="1.77948,-0.0942354,10.191" up="-0.975552,2.07473e-15,0.219767" lens_focal_length="65" />
+        </placements>
       </camera>
       <user_functions library="build/loop_functions/id_loop_functions/libid_loop_functions"
                       label="id_qtuser_functions" /> 
