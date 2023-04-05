@@ -256,7 +256,12 @@ void CEPuckForaging::Init(TConfigurationNode& t_node)
 
     CopyRobotDetails(m_sRobotDetails);
 
-    if(this->GetId().compare("ep"+m_sExpRun.id_FaultyRobotInSwarm) == 0){
+
+    /*
+        Khai Yi 04/05/23
+        Ensuring only robots that *actually* have faults to be flagged as damaged
+    */
+    if(this->GetId().compare("ep"+m_sExpRun.id_FaultyRobotInSwarm) == 0 && m_sExpRun.FBehavior != m_sExpRun.FAULT_NONE ){
         b_damagedrobot = true;
     }
 

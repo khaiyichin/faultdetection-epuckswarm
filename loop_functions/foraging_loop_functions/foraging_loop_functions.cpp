@@ -276,7 +276,12 @@ void CForagingLoopFunctions::PostStep()
         {
             if((list_Consensus_Attackers.size() == list_Consensus_Tolerators.size()) && (list_Consensus_Tolerators.size() == 0))
                 if (observed_rob_id == 15)
-                    cController.GetLEDsPtr()->SetAllColors(CColor::RED);
+                    /*
+                        Khai Yi 04/05/23
+                        Turned this off to prevent the hardcoded robot to flash red; made it flash black instead so that there's no distinction
+                    */
+                    // cController.GetLEDsPtr()->SetAllColors(CColor::RED);
+                    cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
                 else
                     cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
             else if(list_Consensus_Attackers.size() > list_Consensus_Tolerators.size())
