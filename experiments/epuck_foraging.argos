@@ -61,7 +61,9 @@
     <foraging items="1"
               radius="0.1"
 	      arenalength="3.0"
-              output="nohup.txt" />
+              output="nohup.txt"
+              concise_output="true"
+              show_leds="true" />
   </loop_functions>
 
   <!-- *********************** -->

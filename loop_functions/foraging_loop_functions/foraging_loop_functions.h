@@ -33,8 +33,12 @@ private:
    std::vector<CVector2> m_cFoodPos;
    CFloorEntity* m_pcFloor;
    CRandom::CRNG* m_pcRNG;
+   bool m_bShowLeds;
+   bool m_bConciseData;
 
+   std::vector<std::string> vec_strData;
    std::string m_strOutput;
+   std::string m_strCurrStepData;
    std::ofstream m_cOutput;
 
    UInt32 m_unCollectedFood;

@@ -32,6 +32,9 @@ void CForagingLoopFunctions::Init(TConfigurationNode& t_node)
 
         GetNodeAttribute(tForaging, "arenalength", fArenaLength);
 
+        GetNodeAttribute(tForaging, "show_leds", m_bShowLeds);
+
+        GetNodeAttribute(tForaging, "concise_output", m_bConciseData);
         /*
        * if we dont want the foraging beacon to be close to the wall
        m_cForagingArenaSideX = CRange<Real>((1.0f / 4.0f) * fArenaLength, (fArenaLength / 3.0f));
@@ -159,9 +162,10 @@ void CForagingLoopFunctions::PreStep()
     }
 
     /* Output stuff to file */
-    m_cOutput << GetSpace().GetSimulationClock() << "\t"
-              << m_unCollectedFood << std::endl;
+    // m_cOutput << GetSpace().GetSimulationClock() << "\t"
+    //           << m_unCollectedFood << std::endl;
 
+    m_strCurrStepData = std::to_string(GetSpace().GetSimulationClock()) + "\t" + std::to_string(m_unCollectedFood) + "\n";
 
     /* Preparing a list of beacon robots to be then ignored by the fault detection algorithm*/
     for(CSpace::TMapPerType::iterator it = m_cEPucks.begin(); it != m_cEPucks.end(); ++it)
@@ -219,7 +223,10 @@ CColor CForagingLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane
 void CForagingLoopFunctions::PostStep()
 {
     if(GetSpace().GetSimulationClock() <= 450.0)
+    {
+        vec_strData.push_back(m_strCurrStepData);
         return;
+    }
 
 #ifndef RECORDSELFVOTESONLY
     CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
@@ -255,24 +262,42 @@ void CForagingLoopFunctions::PostStep()
             }
         }
 
-        m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t"
-                  << "Id: " << observed_rob_id << "\t"
-                  << "FV: " << observed_rob_fv << "\t";
+        // If concise data is desired, proceed only if data is meaningful
+        if (m_bConciseData &&
+            GetSpace().GetSimulationClock() % 100 <= 90) // hack because I don't know where they parameterize the 9+1 seconds polling time (Khai Yi 04/07/23)
+        {
+            break;
+        }
 
-        m_cOutput << "Consensus_Tolerators: ";
+        // m_cOutput << "Clock: " << GetSpace().GetSimulationClock() << "\t"
+        //           << "Id: " << observed_rob_id << "\t"
+        //           << "FV: " << observed_rob_fv << "\t";
+        m_strCurrStepData += "Clock: " + std::to_string(GetSpace().GetSimulationClock()) + "\t"
+                  + "Id: " + std::to_string(observed_rob_id) + "\t"
+                  + "FV: " + std::to_string(observed_rob_fv) + "\t";
+
+        // m_cOutput << "Consensus_Tolerators: ";
+        m_strCurrStepData += "Consensus_Tolerators: ";
         for (std::list<unsigned>::iterator it_tolcon = list_Consensus_Tolerators.begin(); it_tolcon != list_Consensus_Tolerators.end(); ++it_tolcon)
-            m_cOutput << (*it_tolcon) << " ";
+            // m_cOutput << (*it_tolcon) << " ";
+            m_strCurrStepData += std::to_string(*it_tolcon) + " ";
         for (int i = 0; i < u_num_epucks - list_Consensus_Tolerators.size(); ++i)
-            m_cOutput << " -1 ";
+            // m_cOutput << " -1 ";
+            m_strCurrStepData += " -1 ";
 
-        m_cOutput <<  "\t" << "Consensus_Attackers: ";
+        // m_cOutput <<  "\t" << "Consensus_Attackers: ";
+        m_strCurrStepData += "\t Consensus_Attackers: ";
         for (std::list<unsigned>::iterator it_atkcon = list_Consensus_Attackers.begin(); it_atkcon != list_Consensus_Attackers.end(); ++it_atkcon)
-            m_cOutput << (*it_atkcon) << " ";
+            // m_cOutput << (*it_atkcon) << " ";
+            m_strCurrStepData += std::to_string(*it_atkcon) + " ";
         for (int i = 0; i < u_num_epucks - list_Consensus_Attackers.size(); ++i)
-            m_cOutput << " -1 ";
-        m_cOutput << std::endl;
+            // m_cOutput << " -1 ";
+            m_strCurrStepData += " -1 ";
+        // m_cOutput << std::endl;
+        m_strCurrStepData += "\n";
 
-
+        // Have robot display LEDs
+        if (m_bShowLeds)
         {
             if((list_Consensus_Attackers.size() == list_Consensus_Tolerators.size()) && (list_Consensus_Tolerators.size() == 0))
                 if (observed_rob_id == 15)
@@ -345,6 +370,8 @@ void CForagingLoopFunctions::PostStep()
         m_cOutput << std::endl;
     }
 #endif
+
+    vec_strData.push_back(m_strCurrStepData);
 }
 
 /****************************************/
@@ -355,8 +382,10 @@ void CForagingLoopFunctions::PostExperiment()
     /* Writing the ids of the beacon robots */
 
     bool beaconspresent(false);
+    std::string post_exp_str = "";
 
-    m_cOutput << "BeaconRobotIds: " << "\t";
+    // m_cOutput << "BeaconRobotIds: " << "\t";
+    post_exp_str += "BeaconRobotIds: \t";
 
     CSpace::TMapPerType& m_cEpucks = GetSpace().GetEntitiesByType("e-puck");
     for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
@@ -368,26 +397,17 @@ void CForagingLoopFunctions::PostExperiment()
         if(cController.GetStateData().State == CEPuckForaging::SStateData::STATE_BEACON)
         {
             beaconspresent = true;
-            m_cOutput <<  cController.RobotIdStrToInt() << " ";
+            // m_cOutput <<  cController.RobotIdStrToInt() << " ";
+            post_exp_str += std::to_string(cController.RobotIdStrToInt()) + " ";
         }
     }
 
     if(!beaconspresent)
-        m_cOutput << "-1 ";
+        // m_cOutput << "-1 ";
+        post_exp_str += "-1 ";
 
-    m_cOutput << std::endl << std::endl;
-
-    /* Writing the amount of time each robot spent in each state */
-    for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
-    {
-        /* Get handle to e-puck entity and controller */
-        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
-        CEPuckForaging& cController = dynamic_cast<CEPuckForaging&>(cEPuck.GetControllableEntity().GetController());
-
-        m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING1 <<  " " << cController.TIME_STATE_EXPLORING1 <<  " " << cController.TIME_STATE_BEACON1 <<  " " << cController.TIME_STATE_RESTING_AT_FOOD1 <<   " " << cController.TIME_STATE_RETURN_TO_NEST1 << std::endl;
-    }
-
-    m_cOutput << std::endl ;
+    // m_cOutput << std::endl << std::endl;
+    post_exp_str += "\n\n";
 
     /* Writing the amount of time each robot spent in each state */
     for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
@@ -396,10 +416,12 @@ void CForagingLoopFunctions::PostExperiment()
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
         CEPuckForaging& cController = dynamic_cast<CEPuckForaging&>(cEPuck.GetControllableEntity().GetController());
 
-        m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING2 <<  " " << cController.TIME_STATE_EXPLORING2 <<  " " << cController.TIME_STATE_BEACON2 <<  " " << cController.TIME_STATE_RESTING_AT_FOOD2 <<   " " << cController.TIME_STATE_RETURN_TO_NEST2 << std::endl;
+        // m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING1 <<  " " << cController.TIME_STATE_EXPLORING1 <<  " " << cController.TIME_STATE_BEACON1 <<  " " << cController.TIME_STATE_RESTING_AT_FOOD1 <<   " " << cController.TIME_STATE_RETURN_TO_NEST1 << std::endl;
+        post_exp_str += "TimeForagingStates: " + std::to_string(cController.RobotIdStrToInt()) + " " + std::to_string(cController.TIME_STATE_RESTING1) +  " " + std::to_string(cController.TIME_STATE_EXPLORING1) +  " " + std::to_string(cController.TIME_STATE_BEACON1) +  " " + std::to_string(cController.TIME_STATE_RESTING_AT_FOOD1) +   " " + std::to_string(cController.TIME_STATE_RETURN_TO_NEST1) + "\n";
     }
 
-    m_cOutput << std::endl ;
+    // m_cOutput << std::endl ;
+    post_exp_str += "\n";
 
     /* Writing the amount of time each robot spent in each state */
     for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
@@ -408,9 +430,30 @@ void CForagingLoopFunctions::PostExperiment()
         CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
         CEPuckForaging& cController = dynamic_cast<CEPuckForaging&>(cEPuck.GetControllableEntity().GetController());
 
-        m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING <<  " " << cController.TIME_STATE_EXPLORING <<  " " << cController.TIME_STATE_BEACON <<  " " << cController.TIME_STATE_RESTING_AT_FOOD <<   " " << cController.TIME_STATE_RETURN_TO_NEST << std::endl;
+        // m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING2 <<  " " << cController.TIME_STATE_EXPLORING2 <<  " " << cController.TIME_STATE_BEACON2 <<  " " << cController.TIME_STATE_RESTING_AT_FOOD2 <<   " " << cController.TIME_STATE_RETURN_TO_NEST2 << std::endl;
+        post_exp_str += "TimeForagingStates: " + std::to_string(cController.RobotIdStrToInt()) + " " + std::to_string(cController.TIME_STATE_RESTING2) +  " " + std::to_string(cController.TIME_STATE_EXPLORING2) +  " " + std::to_string(cController.TIME_STATE_BEACON2) +  " " + std::to_string(cController.TIME_STATE_RESTING_AT_FOOD2) +   " " + std::to_string(cController.TIME_STATE_RETURN_TO_NEST2) + "\n";
     }
 
+    // m_cOutput << std::endl ;
+    post_exp_str += "\n" ;
+
+    /* Writing the amount of time each robot spent in each state */
+    for(CSpace::TMapPerType::iterator it = m_cEpucks.begin(); it != m_cEpucks.end(); ++it)
+    {
+        /* Get handle to e-puck entity and controller */
+        CEPuckEntity& cEPuck = *any_cast<CEPuckEntity*>(it->second);
+        CEPuckForaging& cController = dynamic_cast<CEPuckForaging&>(cEPuck.GetControllableEntity().GetController());
+
+        // m_cOutput << "TimeForagingStates: " << cController.RobotIdStrToInt() << " " << cController.TIME_STATE_RESTING <<  " " << cController.TIME_STATE_EXPLORING <<  " " << cController.TIME_STATE_BEACON <<  " " << cController.TIME_STATE_RESTING_AT_FOOD <<   " " << cController.TIME_STATE_RETURN_TO_NEST << std::endl;
+        post_exp_str += "TimeForagingStates: " + std::to_string(cController.RobotIdStrToInt()) + " " + std::to_string(cController.TIME_STATE_RESTING) +  " " + std::to_string(cController.TIME_STATE_EXPLORING) +  " " + std::to_string(cController.TIME_STATE_BEACON) +  " " + std::to_string(cController.TIME_STATE_RESTING_AT_FOOD) +   " " + std::to_string(cController.TIME_STATE_RETURN_TO_NEST) + "\n";
+    }
+    vec_strData.push_back(post_exp_str);
+
+    // Write to file
+    for (auto itr = vec_strData.begin(); itr != vec_strData.end(); ++itr)
+    {
+        m_cOutput << *itr;
+    }
 }
 
 /****************************************/
