@@ -102,26 +102,23 @@ def time_sus(data: list[Dataline], num_robots):
 
 
 if __name__ == "__main__":
+	if len(sys.argv) < 3:
+		raise Exception("usage python analysis_output.py <num_robots> <path>")
     
-	assert process_dataline("1	0") is None
-        
-	process_dataline("Clock: 453	Id: 0	FV: 55	Consensus_Tolerators:  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1 	Consensus_Attackers:  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1 ")
-	process_dataline('Clock: 1695	Id: 12	FV: 53	Consensus_Tolerators: 0 12 13 14 16 17 18 19 2 3 4 5 7 8 9  -1  -1  -1  -1  -1 	Consensus_Attackers: 1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1  -1 ')
-
-	data = process_file('original_data/SWARM_FORAGING/FAULT_ACTUATOR_LWHEEL_SETZERO/nohup_111' if len(sys.argv) < 2 else sys.argv[1])
-	time_faulty = time_sus(data, 20)
+	data = process_file(sys.argv[2])
+	time_faulty = time_sus(data, sys.argv[1])
 	print(time_faulty)
 
-	tf15 = []
-	for i in range(20):
-		exp = str(i+1)
-		data = process_file('original_data/SWARM_FORAGING/FAULT_ACTUATOR_LWHEEL_SETZERO/nohup_' + exp*3)
-		time_faulty = time_sus(data, 20)
-		tf15.append(time_faulty[15])
+	# tf15 = []
+	# for i in range(20):
+	# 	exp = str(i+1)
+	# 	data = process_file('original_data/SWARM_FORAGING/FAULT_ACTUATOR_LWHEEL_SETZERO/nohup_' + exp*3)
+	# 	time_faulty = time_sus(data, 20)
+	# 	tf15.append(time_faulty[15])
 	
-	plt.boxplot(tf15)
-	plt.ylim(0, 1)
-	plt.show()
+	# plt.boxplot(tf15)
+	# plt.ylim(0, 1)
+	# plt.show()
 
 
         
