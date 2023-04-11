@@ -63,7 +63,7 @@
 	      arenalength="3.0"
               output="nohup.txt"
               concise_output="true"
-              show_leds="true" />
+              show_leds="false" />
   </loop_functions>
 
   <!-- *********************** -->

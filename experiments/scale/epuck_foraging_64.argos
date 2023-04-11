@@ -61,7 +61,9 @@
     <foraging items="1"
               radius="0.1"
 	      arenalength="6.0"
-              output="nohup.txt" />
+              output="nohup.txt"
+              concise_output="true"
+              show_leds="true" />
   </loop_functions>
 
   <!-- *********************** -->
@@ -126,10 +128,9 @@
   <visualization>
     <qt-opengl>
       <camera>
-        <placement idx="0"
-                   position="0,0,2.0"
-                   look_at="0,0,0"
-                   lens_focal_length="15" />
+        <placements>
+          <placement index="0" position="9.92102,-0.00429149,14.0593" look_at="9.31433,-0.00429149,13.2644" up="-0.794941,-1.05405e-15,0.606687" lens_focal_length="65" />
+        </placements>
       </camera>
 
      <user_functions library="build/loop_functions/id_loop_functions/libid_loop_functions"
