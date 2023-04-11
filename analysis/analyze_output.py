@@ -106,7 +106,7 @@ if __name__ == "__main__":
 		raise Exception("usage python analysis_output.py <num_robots> <path>")
     
 	data = process_file(sys.argv[2])
-	time_faulty = time_sus(data, sys.argv[1])
+	time_faulty = time_sus(data, int(sys.argv[1]))
 	print(time_faulty)
 
 	# tf15 = []
