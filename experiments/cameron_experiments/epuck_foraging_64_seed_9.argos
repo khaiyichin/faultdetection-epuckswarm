@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+
+<!-- *************************************************** -->
+<!-- * A fully commented XML is diffusion_1.xml. Refer * -->
+<!-- * to it to have full information about what       * -->
+<!-- * these options mean.                             * -->
+<!-- *************************************************** -->
+
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system threads="0" />
+    <experiment length="600"
+                ticks_per_second="10"
+                random_seed="9" />
+  </framework>
+
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <epuck_foraging_controller id="efc"
+                                 library="build/controllers/epuck_foraging/libepuck_foraging.so">
+      <actuators>
+        <differential_steering implementation="default" noise_std_dev="0.1" />
+        <leds implementation="default" medium="leds" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <light implementation="default" show_rays="false" />
+        <ground implementation="rot_z_only" />
+        <proximity implementation="default" show_rays="false" noise_level="0.1" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="false" noise_std_dev="0.01" />
+        <differential_steering implementation="default" vel_noise_range="-0.1:0.1"  dist_noise_range="-1.0:1.0" />
+      </sensors>
+      <params>
+        <experiment_run swarm_behavior="SWARM_FORAGING"
+			fault_behavior="FAULT_PROXIMITYSENSORS_SETRANDOM" 
+                  injection_step="250"
+	                id_faulty_robot="32" />
+        <wheel_turning max_speed="5" />
+        <state initial_rest_to_explore_prob="0.1"
+	       minimum_resting_time="50"
+               minimum_unsuccessful_explore_time="6000000"
+               minimum_search_for_place_in_nest_time="50" >
+        </state>
+      </params>
+    </epuck_foraging_controller>
+
+  </controllers>
+
+  <!-- ****************** -->
+  <!-- * Loop functions * -->
+  <!-- ****************** -->
+  <loop_functions library="build/loop_functions/foraging_loop_functions/libforaging_loop_functions.so"
+                  label="foraging_loop_functions">
+    <foraging items="1"
+              radius="0.1"
+	      arenalength="6.0"
+              output="data_seed_9.txt"
+              concise_output="true"
+              show_leds="true" />
+  </loop_functions>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="6, 6, 2" center="0,0,1">
+
+    <floor id="floor"
+           source="loop_functions"
+           pixels_per_meter="50" />
+
+    <box id="wall_north" size="6,0.1,0.5" movable="false">
+      <body position="0,3,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="6, 0.1,0.5" movable="false">
+      <body position="0,-3,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,6,0.5" movable="false">
+      <body position="3,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,6,0.5" movable="false">
+      <body position="-3,0,0" orientation="0,0,0" />
+    </box>
+
+    <light id="light_1"
+           position="-1.7,0,1.5"
+           orientation="0,0,0"
+           color="yellow"
+           intensity="3.0"
+           medium="leds" />
+
+    <distribute>
+      <position method="uniform" min="-3, -3,0" max="-2,3,0" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="64" max_trials="5">
+	<e-puck id="ep" rab_data_size="1000" rab_range="1">    <!-- using a high bandwidth of 100 bytes for now -->
+          <controller config="efc" />
+        </e-puck>
+      </entity>
+    </distribute>
+
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <dynamics2d id="dyn2d" iterations="50" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media>
+    <range_and_bearing id="rab" />
+    <led id="leds" />
+  </media>
+
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" position="9.92102,-0.00429149,14.0593" look_at="9.31433,-0.00429149,13.2644" up="-0.794941,-1.05405e-15,0.606687" lens_focal_length="65" />
+        </placements>
+      </camera>
+
+     <user_functions library="build/loop_functions/id_loop_functions/libid_loop_functions"
+                      label="id_qtuser_functions" /> 
+
+      <user_functions label="foraging_qt_user_functions" />
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>
