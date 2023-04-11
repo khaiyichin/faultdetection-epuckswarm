@@ -75,16 +75,14 @@ def time_sus(data: list[Dataline], num_robots):
 		if sus and not currently_faulty[robot_ind]:
 			currently_faulty[robot_ind] = 1
 			declared_faulty_time[robot_ind] = line.time
-			if line.robot == 15:
-				print(f"Robot 15 declared fault at {line.time}")
+			print(f"Robot {robot_ind} declared fault at {line.time}")
 
 		# Case 2: Neighbors no longer think you are faulty
-		elif antisus and currently_faulty[robot_ind]:
+		elif not sus and currently_faulty[robot_ind]:
 			currently_faulty[robot_ind] = 0
 			total_faulty_time[robot_ind] = total_faulty_time[robot_ind] + (line.time - declared_faulty_time[robot_ind])
 			declared_faulty_time[robot_ind] = 0
-			if line.robot == 15:
-				print(f"Robot 15 declared safe at {line.time}")
+			print(f"Robot {robot_ind} declared safe at {line.time}")
 
 	for robot, faulty in enumerate(list(currently_faulty)):
 		if faulty:
