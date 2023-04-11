@@ -286,7 +286,7 @@ void CForagingLoopFunctions::PostStep()
             m_strCurrStepData += " -1 ";
 
         // m_cOutput <<  "\t" << "Consensus_Attackers: ";
-        m_strCurrStepData += "\t Consensus_Attackers: ";
+        m_strCurrStepData += "\tConsensus_Attackers: ";
         for (std::list<unsigned>::iterator it_atkcon = list_Consensus_Attackers.begin(); it_atkcon != list_Consensus_Attackers.end(); ++it_atkcon)
             // m_cOutput << (*it_atkcon) << " ";
             m_strCurrStepData += std::to_string(*it_atkcon) + " ";
