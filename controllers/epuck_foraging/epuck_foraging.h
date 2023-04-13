@@ -156,6 +156,7 @@ public:
         std::string id_FaultyRobotInSwarm;
         std::string swarmbehav;
         int injectionStep; // the ARGoS timestep to activate the fault
+        bool showLeds; // to turn on or off LEDs
 
         unsigned u_num_epucks; // number of epucks in swarm
 

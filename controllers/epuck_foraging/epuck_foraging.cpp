@@ -39,6 +39,7 @@ void CEPuckForaging::ExperimentToRun::Init(TConfigurationNode& t_node)
         GetNodeAttribute(t_node, "fault_behavior", errorbehav);
         GetNodeAttribute(t_node, "id_faulty_robot", id_FaultyRobotInSwarm);
         GetNodeAttribute(t_node, "injection_step", injectionStep);
+        GetNodeAttribute(t_node, "show_leds", showLeds);
     }
     catch(CARGoSException& ex)
             THROW_ARGOSEXCEPTION_NESTED("Error initializing type of experiment to run, and fault to simulate.", ex);
@@ -384,7 +385,10 @@ void CEPuckForaging::ControlStep()
     // Only set the damaged robot flag once we hit the set timestep
     if (b_damagedrobot && m_fInternalRobotTimer >= m_sExpRun.injectionStep){
         b_currently_damaged = true;
-        m_pcLEDs->SetAllColors(CColor::RED); // for now
+        if (m_sExpRun.showLeds)
+        {
+            m_pcLEDs->SetAllColors(CColor::RED); // for now
+        }
     }
 
     m_fInternalRobotTimer += 1.0f;
