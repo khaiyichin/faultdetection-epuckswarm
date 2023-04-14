@@ -39,7 +39,7 @@
       </sensors>
       <params>
         <experiment_run swarm_behavior="SWARM_FORAGING"
-			fault_behavior="FAULT_NONE"
+			fault_behavior= "FAULT_NONE"
 	                id_faulty_robot="1"
                   injection_step="0"
                   show_leds="false" />

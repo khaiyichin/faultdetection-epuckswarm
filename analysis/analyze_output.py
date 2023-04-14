@@ -68,8 +68,8 @@ def time_sus(data: list[Dataline], num_robots):
 			continue
 
 		robot_ind = line.robot
-		sus = len(line.attackers) >= num_robots / 2
-		antisus = len(line.tolerators) >= num_robots / 2
+		sus = len(line.attackers) >= 5 # num_robots / 2
+		antisus = len(line.tolerators) >= 10 # num_robots / 2
 
 		# Case 1: Neighbors now think you are faultly
 		if sus and not currently_faulty[robot_ind]:

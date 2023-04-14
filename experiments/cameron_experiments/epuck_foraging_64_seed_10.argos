@@ -41,7 +41,8 @@
         <experiment_run swarm_behavior="SWARM_FORAGING"
 			fault_behavior="FAULT_NONE" 
                   injection_step="1"
-	                id_faulty_robot="0" />
+	                id_faulty_robot="0"
+                  show_leds="false" />
         <wheel_turning max_speed="5" />
         <state initial_rest_to_explore_prob="0.1"
 	       minimum_resting_time="50"
@@ -58,7 +59,7 @@
   <!-- ****************** -->
   <loop_functions library="build/loop_functions/foraging_loop_functions/libforaging_loop_functions.so"
                   label="foraging_loop_functions">
-    <foraging items="1"
+    <foraging items="3"
               radius="0.1"
 	      arenalength="6.0"
               output="data_seed_10.txt"
@@ -89,7 +90,7 @@
     </box>
 
     <light id="light_1"
-           position="-1.7,0,1.5"
+           position="-3,0,1.5"
            orientation="0,0,0"
            color="yellow"
            intensity="3.0"
@@ -129,7 +130,7 @@
     <qt-opengl>
       <camera>
         <placements>
-          <placement index="0" position="9.92102,-0.00429149,14.0593" look_at="9.31433,-0.00429149,13.2644" up="-0.794941,-1.05405e-15,0.606687" lens_focal_length="65" />
+          <placement index="0" position="3.91102,-0.00429149,15.0593" look_at="3.65533,-0.00429149,14.0925" up="-0.794941,0.0,0.255414" lens_focal_length="65" />
         </placements>
       </camera>
 

@@ -310,9 +310,9 @@ void CForagingLoopFunctions::PostStep()
                 else
                     cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
             else if(list_Consensus_Attackers.size() > list_Consensus_Tolerators.size())
-                cController.GetLEDsPtr()->SetAllColors(CColor::RED);
+                cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
             else
-                cController.GetLEDsPtr()->SetAllColors(CColor::GREEN);
+                cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
         }
     }
 #else
