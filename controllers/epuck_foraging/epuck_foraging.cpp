@@ -23,10 +23,20 @@ CBayesianInferenceFeatureVector::RobotData CBayesianInferenceFeatureVector::m_sR
 /****************************************/
 /****************************************/
 
+std::vector<std::string> tokens(const std::string& str) {
+    std::vector<std::string> words;
+    std::istringstream iss(str);
+    std::string word;
+    while (iss >> word) {
+        words.push_back(word);
+    }
+    return words;
+}
+
 CEPuckForaging::ExperimentToRun::ExperimentToRun() :
     SBehavior(SWARM_FORAGING),
     FBehavior(FAULT_NONE),
-    id_FaultyRobotInSwarm("-1") {}
+    id_FaultyRobotsInSwarm("-1") {}
 
 
 void CEPuckForaging::ExperimentToRun::Init(TConfigurationNode& t_node)
@@ -37,9 +47,13 @@ void CEPuckForaging::ExperimentToRun::Init(TConfigurationNode& t_node)
     {
         GetNodeAttribute(t_node, "swarm_behavior", swarmbehav);
         GetNodeAttribute(t_node, "fault_behavior", errorbehav);
-        GetNodeAttribute(t_node, "id_faulty_robot", id_FaultyRobotInSwarm);
-        GetNodeAttribute(t_node, "injection_step", injectionStep);
+        GetNodeAttribute(t_node, "id_faulty_robot", id_FaultyRobotsInSwarm);
+        GetNodeAttribute(t_node, "injection_step", injectionSteps);
         GetNodeAttribute(t_node, "show_leds", showLeds);
+
+        if (tokens(id_FaultyRobotsInSwarm).size() != tokens(injectionSteps).size()){
+            THROW_ARGOSEXCEPTION("Error initializing experiment, must have equal number of broken robots as injection times");
+        }
     }
     catch(CARGoSException& ex)
             THROW_ARGOSEXCEPTION_NESTED("Error initializing type of experiment to run, and fault to simulate.", ex);
@@ -262,9 +276,20 @@ void CEPuckForaging::Init(TConfigurationNode& t_node)
         Khai Yi 04/05/23
         Ensuring only robots that *actually* have faults to be flagged as damaged
     */
-    if(this->GetId().compare("ep"+m_sExpRun.id_FaultyRobotInSwarm) == 0 && m_sExpRun.FBehavior != m_sExpRun.FAULT_NONE ){
-        b_damagedrobot = true;
-    }
+    auto ids = tokens(m_sExpRun.id_FaultyRobotsInSwarm);
+    auto i_steps = tokens(m_sExpRun.injectionSteps);
+    for(int i = 0; i < ids.size(); ++i){
+        
+        std::string id = ids[i];
+                    std::cout << id << std::endl;
+        std::string i_step = i_steps[i];
+        if(this->GetId().compare("ep"+id) == 0 && m_sExpRun.FBehavior != m_sExpRun.FAULT_NONE){
+            b_damagedrobot = true;
+            injectionstep = stoi(i_step);
+            std::cout << id << std::endl;
+        }
+    } 
+
 
     // robotid set to 0 for now
     crminAgent = new CRMinRobotAgentOptimised(RobotIdStrToInt(), CProprioceptiveFeatureVector::NUMBER_OF_FEATURES);
@@ -383,7 +408,7 @@ void CEPuckForaging::ControlStep()
     m_uEPuckRABDataIndex = 0;
 
     // Only set the damaged robot flag once we hit the set timestep
-    if (b_damagedrobot && m_fInternalRobotTimer >= m_sExpRun.injectionStep){
+    if (b_damagedrobot && m_fInternalRobotTimer >= injectionstep){
         b_currently_damaged = true;
         if (m_sExpRun.showLeds)
         {
@@ -667,6 +692,7 @@ void CEPuckForaging::RunForagingExperiment()
     default:
     {
         LOGERR << "We can't be here, there's a bug!" << std::endl;
+
     }
     }
 

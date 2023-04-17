@@ -22,6 +22,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>    // std::sort
+#include <string>
+#include <sstream>
 
 /****************************************/
 /****************************************/
@@ -153,9 +155,9 @@ public:
         } FBehavior;
 
 
-        std::string id_FaultyRobotInSwarm;
+        std::string id_FaultyRobotsInSwarm;
         std::string swarmbehav;
-        int injectionStep; // the ARGoS timestep to activate the fault
+        std::string injectionSteps; 
         bool showLeds; // to turn on or off LEDs
 
         unsigned u_num_epucks; // number of epucks in swarm
@@ -636,6 +638,7 @@ private:
     TBehaviorVector             m_vecBehaviors;
     bool                        b_damagedrobot;     // true if robot is damaged
     bool                        b_currently_damaged; // true if the fault is active
+    int                         injectionstep; // step to start the fault at
 
     unsigned                    u_num_consequtivecollisions;
 

@@ -1,3 +1,6 @@
 build/
 nohup.txt
 original_data/
+frames*
+old*
+experiments/scale/will_old*
