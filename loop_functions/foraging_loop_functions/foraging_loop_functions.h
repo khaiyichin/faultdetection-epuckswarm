@@ -40,6 +40,8 @@ private:
    std::string m_strOutput;
    std::string m_strCurrStepData;
    std::ofstream m_cOutput;
+   std::vector<CColor> m_cLedColors;
+   UInt32 m_unLedBins;
 
    UInt32 m_unCollectedFood;
 //   SInt64 m_nEnergy;

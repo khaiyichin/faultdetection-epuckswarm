@@ -35,6 +35,36 @@ void CForagingLoopFunctions::Init(TConfigurationNode& t_node)
         GetNodeAttribute(tForaging, "show_leds", m_bShowLeds);
 
         GetNodeAttribute(tForaging, "concise_output", m_bConciseData);
+
+        GetNodeAttribute(tForaging, "led_bins", m_unLedBins);
+
+        // Populate pre-defined colors based on the number of bins
+        m_cLedColors = {CColor::YELLOW};
+
+        if (m_unLedBins > 4 || m_unLedBins < 2)
+        {
+            THROW_ARGOSEXCEPTION("LED bins must be either 2, 3, or 4.");
+        }
+        else
+        {
+            if (m_unLedBins == 4)
+            {
+                // m_cLedColors.push_back(CColor(245, 166, 39, 255)); // orange
+                m_cLedColors.push_back(CColor::BLUE);
+            }
+
+            if (m_unLedBins >= 3)
+            {
+                // m_cLedColors.push_back(CColor(165, 67, 0, 255)); // brown
+                m_cLedColors.push_back(CColor::MAGENTA);
+            }
+
+            if (m_unLedBins >= 2)
+            {
+                m_cLedColors.push_back(CColor::RED);
+            }
+        }
+
         /*
        * if we dont want the foraging beacon to be close to the wall
        m_cForagingArenaSideX = CRange<Real>((1.0f / 4.0f) * fArenaLength, (fArenaLength / 3.0f));
@@ -310,7 +340,25 @@ void CForagingLoopFunctions::PostStep()
                 else
                     cController.GetLEDsPtr()->SetAllColors(CColor::BLACK);
             else if(list_Consensus_Attackers.size() > list_Consensus_Tolerators.size())
-                cController.GetLEDsPtr()->SetAllColors(CColor::RED);
+            {
+                /*
+                    Khai Yi 04/19/23
+                    Set the robot's LED based on color codes (pre-defined based on the number of bins)
+                */
+                // cController.GetLEDsPtr()->SetAllColors(CColor::RED);
+                int threshold = m_cEpucks.size() / m_unLedBins;
+
+                // Decide the correct color to display
+                for (int i = m_unLedBins - 1; i >= 0; --i)
+                {
+                    if (list_Consensus_Attackers.size() == 0) break; // shouldn't happen (since we're already in an `else if` that would disqualify this)
+                    else if (list_Consensus_Attackers.size() > i * threshold)
+                    {
+                        cController.GetLEDsPtr()->SetAllColors(m_cLedColors[i]);
+                        break;
+                    }
+                }
+            }
             else
                 cController.GetLEDsPtr()->SetAllColors(CColor::GREEN);
         }
