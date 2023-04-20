@@ -12,7 +12,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
 		show_leds = "false"
 		led_bins = 2 # need a default value that is not 0
 		
-	if size == 16:
+	if size == 16 or size == 20:
 		arena = f"""
             <!-- *********************** -->
     <!-- * Arena configuration * -->
@@ -46,7 +46,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
       <distribute>
         <position method="uniform" min="-1.5, -1.5,0" max="-1,1.5,0" />
         <orientation method="uniform" min="0,0,0" max="360,0,0" />
-        <entity quantity="16" max_trials="5">
+        <entity quantity="{size}" max_trials="5">
     <e-puck id="ep" rab_data_size="1000" rab_range="1">    <!-- using a high bandwidth of 100 bytes for now -->
             <controller config="efc" />
           </e-puck>
@@ -111,7 +111,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
           </placements>
         </camera>"""
 	else:
-		raise Exception("Give valid size, 16 or 64")
+		raise ValueError("Give valid size, 16 or 64")
 	
 	id_faulty = random.sample(range(size), num_faulty)
 	faulty_times = random.choices(range(lower, upper), k=num_faulty)
@@ -165,7 +165,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
         fault_behavior="{fault}" 
                     id_faulty_robot="{id_faulty_str}"
                     injection_step="{faulty_times_str}"
-                    show_leds="{show_leds}" />
+                    show_leds="false" />
           <wheel_turning max_speed="5" />
           <state initial_rest_to_explore_prob="0.1"
           minimum_resting_time="50"

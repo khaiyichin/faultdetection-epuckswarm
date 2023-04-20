@@ -62,14 +62,13 @@ def time_sus(data: list[Dataline], num_robots):
 	min_time = data[0].time
 
 	for line in data:
-		is_comm_timestep = int(str(line.time)[-2:]) > 90
+		is_comm_timestep = int(str(line.time)[-2:]) >= 90
 
 		if not is_comm_timestep:
 			continue
 
 		robot_ind = line.robot
-		sus = len(line.attackers) >= num_robots / 2
-		antisus = len(line.tolerators) >= num_robots / 2
+		sus = len(line.attackers) > len(line.tolerators)
 
 		# Case 1: Neighbors now think you are faultly
 		if sus and not currently_faulty[robot_ind]:
@@ -77,7 +76,7 @@ def time_sus(data: list[Dataline], num_robots):
 			declared_faulty_time[robot_ind] = line.time
 			print(f"Robot {robot_ind} declared fault at {line.time}")
 
-		# Case 2: Neighbors no longer think you are faulty
+		# # Case 2: Neighbors no longer think you are faulty
 		elif not sus and currently_faulty[robot_ind]:
 			currently_faulty[robot_ind] = 0
 			total_faulty_time[robot_ind] = total_faulty_time[robot_ind] + (line.time - declared_faulty_time[robot_ind])
@@ -112,6 +111,7 @@ if __name__ == "__main__":
 	# 	exp = str(i+1)
 	# 	data = process_file('original_data/SWARM_FORAGING/FAULT_ACTUATOR_LWHEEL_SETZERO/nohup_' + exp*3)
 	# 	time_faulty = time_sus(data, 20)
+	# 	print(time_faulty)
 	# 	tf15.append(time_faulty[15])
 	
 	# plt.boxplot(tf15)
