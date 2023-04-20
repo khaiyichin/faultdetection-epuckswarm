@@ -4,13 +4,19 @@ import random
 import os
 
 
-def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, upper=1000):
+def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, upper=1000, headless=False):
 	if num_faulty > size or num_faulty < 0:
 		raise ValueError(f"`num_faulty` must be between 0 and {size}")
 	show_leds = "true"
 	if led_bins == 0:
 		show_leds = "false"
 		led_bins = 2 # need a default value that is not 0
+
+	headless_pre = headless_suf = ''
+	if headless:
+		headless_pre = '<!--'
+		headless_suf = "-->"
+
 		
 	if size == 16 or size == 20:
 		arena = f"""
@@ -211,7 +217,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
     <!-- ****************** -->
     <!-- * Visualization * -->
     <!-- ****************** -->
-    <visualization>
+    {headless_pre}<visualization>
       <qt-opengl>
 		{camera}
 
@@ -226,7 +232,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
                       headless_frame_size="1600x1200"
                       headless_frame_rate="1"/>
       </qt-opengl>
-    </visualization>
+    </visualization>{headless_suf}
 
   </argos-configuration>
   """
