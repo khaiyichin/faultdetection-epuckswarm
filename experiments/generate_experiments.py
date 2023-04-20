@@ -3,7 +3,6 @@ import fire
 import random
 import os
 
-area_length = 3.0
 
 def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, upper=1000, headless=False):
 	if num_faulty > size or num_faulty < 0:
