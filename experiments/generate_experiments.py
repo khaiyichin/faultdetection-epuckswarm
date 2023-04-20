@@ -3,6 +3,7 @@ import fire
 import random
 import os
 
+area_length = 3.0
 
 def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, upper=1000, headless=False):
 	if num_faulty > size or num_faulty < 0:
@@ -19,6 +20,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
 
 		
 	if size == 16 or size == 20:
+		arena_length = 3.0
 		arena = f"""
             <!-- *********************** -->
     <!-- * Arena configuration * -->
@@ -69,6 +71,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
         </camera>"""
 
 	elif size == 64: 
+		arena_length = 6.0
 		arena = f"""    
 	<!-- *********************** -->
     <!-- * Arena configuration * -->
@@ -93,11 +96,11 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
       </box>
 
       <light id="light_1"
-            position="-1.7,0,1.5"
-            orientation="0,0,0"
-            color="yellow"
-            intensity="3.0"
-            medium="leds" />
+           position="-3,0,1.5"
+           orientation="0,0,0"
+           color="yellow"
+           intensity="3.0"
+           medium="leds" />
 
       <distribute>
         <position method="uniform" min="-3, -3,0" max="-2,3,0" />
@@ -113,9 +116,14 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
 		camera = f"""
         <camera>
           <placements>
-            <placement index="0" position="9.92102,-0.00429149,14.0593" look_at="9.31433,-0.00429149,13.2644" up="-0.794941,-1.05405e-15,0.606687" lens_focal_length="65" />
+            <placement index="0" position="3.91102,-0.00429149,15.0593" look_at="3.65533,-0.00429149,14.0925" up="-0.794941,0.0,0.255414" lens_focal_length="65" />
           </placements>
         </camera>"""
+		
+
+        
+           
+      
 	else:
 		raise ValueError("Give valid size, 16 or 64")
 	
@@ -190,7 +198,7 @@ def generate(size, fault, seed, num_faulty=1, led_bins=0, length=300, lower=0, u
                     label="foraging_loop_functions">
       <foraging items="1"
                 radius="0.1"
-          arenalength="3.0"
+          arenalength="{arena_length}"
                 output="nohup_{seed}.txt"
                 concise_output="true"
                 show_leds="{show_leds}"
