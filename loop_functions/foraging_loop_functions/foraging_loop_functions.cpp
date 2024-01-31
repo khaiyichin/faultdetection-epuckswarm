@@ -39,7 +39,7 @@ void CForagingLoopFunctions::Init(TConfigurationNode& t_node)
         GetNodeAttribute(tForaging, "led_bins", m_unLedBins);
 
         // Populate pre-defined colors based on the number of bins
-        m_cLedColors = {CColor::YELLOW};
+        m_cLedColors = {CColor::MAGENTA};
 
         if (m_unLedBins > 4 || m_unLedBins < 2)
         {
@@ -50,13 +50,13 @@ void CForagingLoopFunctions::Init(TConfigurationNode& t_node)
             if (m_unLedBins == 4)
             {
                 // m_cLedColors.push_back(CColor(245, 166, 39, 255)); // orange
-                m_cLedColors.push_back(CColor::BLUE);
+                m_cLedColors.push_back(CColor::CYAN);
             }
 
             if (m_unLedBins >= 3)
             {
                 // m_cLedColors.push_back(CColor(165, 67, 0, 255)); // brown
-                m_cLedColors.push_back(CColor::MAGENTA);
+                m_cLedColors.push_back(CColor::YELLOW);
             }
 
             if (m_unLedBins >= 2)
