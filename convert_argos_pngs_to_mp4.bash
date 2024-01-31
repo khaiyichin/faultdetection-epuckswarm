@@ -19,7 +19,7 @@ if_remove_45s=0
 while true; 
 do
   # Ask the user if they want to delete all the files
-  read -p "Do you the first 45 seconds of the video removed? (y/n)" answer
+  read -p "Do you want to remove the first 45 seconds of the video? (y/n)" answer
 
   # Check the answer and delete the files if yes
   case $answer in
