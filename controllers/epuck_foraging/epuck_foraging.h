@@ -152,12 +152,14 @@ public:
             FAULT_SOFTWARE,
 
             FAULT_POWER_FAILURE
-        } FBehavior;
+        };
 
 
         std::string id_FaultyRobotsInSwarm;
         std::string swarmbehav;
-        std::string injectionSteps; 
+        std::string errorbehavs;
+        std::string injectionSteps;
+        std::vector<FaultBehavior> FBehaviors;
         bool showLeds; // to turn on or off LEDs
 
         unsigned u_num_epucks; // number of epucks in swarm
@@ -635,10 +637,11 @@ private:
 
 private:
 
-    TBehaviorVector             m_vecBehaviors;
-    bool                        b_damagedrobot;     // true if robot is damaged
-    bool                        b_currently_damaged; // true if the fault is active
-    int                         injectionstep; // step to start the fault at
+    TBehaviorVector                     m_vecBehaviors;
+    bool                                b_damagedrobot;      // true if robot is damaged
+    bool                                b_currently_damaged; // true if the fault is active
+    int                                 injectionstep;       // step to start the fault at
+    ExperimentToRun::FaultBehavior      m_faultBehavior;      // fault that the robot exibits
 
     unsigned                    u_num_consequtivecollisions;
 
